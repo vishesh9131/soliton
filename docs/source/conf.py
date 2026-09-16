@@ -36,7 +36,7 @@ exclude_patterns = []
 html_theme = "pydata_sphinx_theme"
 html_static_path = ["_static"]
 html_css_files = ["soliton.css"]
-html_title = "Soliton"
+html_title = "Soliton documentation"
 html_theme_options = {
     "navbar_start": ["navbar-logo"],
     "navbar_center": ["navbar-nav"],

@@ -12,6 +12,11 @@ Comparing it against everyone else's fp32 flatters it by roughly 1.6×, so the f
 
 ## Predicting memory before running
 
+```{image} _static/chart-memory.png
+:alt: Peak GPU memory per framework
+:width: 100%
+```
+
 | Framework | Peak reserved, batch 8 | Predicted in advance? | Cost |
 | --- | --- | --- | --- |
 | **Soliton (arena)** | **9.20 GiB** | **exact, 0 bytes** | 0.4 s, no GPU |
@@ -22,6 +27,11 @@ Comparing it against everyone else's fp32 flatters it by roughly 1.6×, so the f
 
 ## Largest batch under a 24 GiB budget
 
+```{image} _static/chart-maxbatch.png
+:alt: Largest batch under a 24 GiB budget
+:width: 100%
+```
+
 | Framework | Batch | How |
 | --- | --- | --- |
 | **Soliton, auto-fit** | **52** | solver picks 13 units, 6 s, no GPU, verified by training |
@@ -31,6 +41,11 @@ Comparing it against everyone else's fp32 flatters it by roughly 1.6×, so the f
 | TensorFlow | 8 | 7 runs, 4 crashes, 183 s |
 
 ## Throughput
+
+```{image} _static/chart-throughput.png
+:alt: Training throughput in both precisions
+:width: 100%
+```
 
 Tokens per second at batch 8:
 

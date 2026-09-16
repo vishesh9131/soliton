@@ -1,6 +1,7 @@
 """Render the README charts from the measured benchmark JSON. Regenerate with: python bench/make_charts.py"""
 import json
 import os
+import shutil
 
 import matplotlib
 matplotlib.use("Agg")
@@ -102,4 +103,9 @@ if __name__ == "__main__":
     chart_memory()
     chart_maxbatch()
     chart_throughput()
+    docs = os.path.join(os.path.dirname(HERE), "docs", "source", "_static")
+    if os.path.isdir(docs):  # the docs site serves its own copy
+        for f in os.listdir(OUT):
+            if f.startswith("chart-"):
+                shutil.copy(os.path.join(OUT, f), docs)
     print("wrote", ", ".join(sorted(f for f in os.listdir(OUT) if f.startswith("chart-"))))
