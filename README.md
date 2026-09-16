@@ -16,6 +16,7 @@ The checked benchmark is GPT-2 124M, sequence length 1024, AdamW, on one NVIDIA 
 | --- | --- |
 | Memory-plan accuracy | **0 bytes error** against Soliton's peak reserved memory at batches 1, 2, 4, 8, and 16 |
 | Planning cost | **0.01 s** with **0 GPU memory** used for the plan |
+| Static memory planning | **9.20 GiB** peak reserved at batch 8 against **10.27 GiB** for the caching pool (−10.5%), packed with **0.00%** waste and unchanged throughput |
 | Maximum GPT-2 batch under 24 GiB | **23**, chosen from dry runs and verified by a real training run |
 | Auto-fit under the same 24 GiB cap | **Batch 52** by choosing activation checkpointing; predicted and actual peak: **23.97 GiB** |
 | FP32 throughput at batch 8 | **16,678 tokens/s**; PyTorch: 15,576; JAX: 18,037; TensorFlow: 11,447 |
@@ -31,8 +32,12 @@ Soliton uses the same deterministic allocator and allocation sequence in a real 
 2. `meta` replays that allocation trace using fake addresses and skips GPU execution.
 3. A hard memory limit uses the same pool policy in both modes.
 4. The planner can search checkpoint counts before touching a GPU.
+5. `sl.arena` goes one step further: the recorded trace is packed into a single arena, giving every tensor a
+   fixed offset, and the run replays those offsets with a per-allocation size check. Tensors whose lifetimes do
+   not overlap share the same bytes, so the plan *is* the allocation.
 
-The direct regression coverage is in [`tests/test_memory.py`](tests/test_memory.py).
+The direct regression coverage is in [`tests/test_memory.py`](tests/test_memory.py) and
+[`tests/test_arena.py`](tests/test_arena.py).
 
 ## Install
 
@@ -128,6 +133,7 @@ Implemented today:
 
 - Float32 tensors, reverse-mode autograd, common neural-network modules, AdamW, CPU and CUDA backends
 - Deterministic caching allocator, `meta` planning, a hard memory cap, and checkpoint auto-fit
+- Static arena planning (`sl.arena`): one allocation for the whole run, offsets solved offline from the trace
 - GPT-2 124M training with fused causal attention and data parallelism over NCCL
 - Opt-in TF32 and an elementwise CUDA fusion path
 

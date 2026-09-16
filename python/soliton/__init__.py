@@ -1,5 +1,5 @@
 """Soliton: a deep learning framework that tells you how much memory training needs before you run it."""
-from . import distributed, nn, optim
+from . import arena, distributed, nn, optim
 from .tensor import (
     Tensor, add, attention, checkpoint, clone, cross_entropy, cuda_mem_info, div, embedding, empty, empty_cache, full, gelu,
     layernorm, linear, matmul, memory_stats, mul, no_grad, normal, permute, plan, reset_peak_stats, reshape,

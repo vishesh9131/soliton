@@ -290,5 +290,105 @@
     "error": "Graph execution error:"
    }
   ]
+ },
+ {
+  "framework": "soliton+arena",
+  "budget_gib": 24.0,
+  "predicted_max": 23,
+  "predict_search_s": 7.230211973190308,
+  "predict_calls": [
+   {
+    "batch": 1,
+    "predicted": 2791476224,
+    "fits": true,
+    "wall_s": 0.9154486656188965
+   },
+   {
+    "batch": 25,
+    "predicted": 27345259520,
+    "fits": false,
+    "wall_s": 1.0505928993225098
+   },
+   {
+    "batch": 13,
+    "predicted": 15065254912,
+    "fits": true,
+    "wall_s": 0.9655494689941406
+   },
+   {
+    "batch": 19,
+    "predicted": 21202144256,
+    "fits": true,
+    "wall_s": 1.2532429695129395
+   },
+   {
+    "batch": 22,
+    "predicted": 24203086848,
+    "fits": true,
+    "wall_s": 0.9898591041564941
+   },
+   {
+    "batch": 23,
+    "predicted": 25302207488,
+    "fits": true,
+    "wall_s": 0.9708831310272217
+   },
+   {
+    "batch": 24,
+    "predicted": 26246138880,
+    "fits": false,
+    "wall_s": 1.0829284191131592
+   }
+  ],
+  "predicted_max_trains": true,
+  "predicted_max_plus1_ooms": true,
+  "true_max": 23,
+  "real_search_s": 29.28494167327881,
+  "real_search_runs": 7,
+  "real_search_ooms": 2,
+  "real_runs": [
+   {
+    "batch": 1,
+    "ok": true,
+    "wall_s": 3.8773324489593506,
+    "error": null
+   },
+   {
+    "batch": 25,
+    "ok": false,
+    "wall_s": 1.3810534477233887,
+    "error": "planned arena 27345259520 exceeds budget 25769803776"
+   },
+   {
+    "batch": 13,
+    "ok": true,
+    "wall_s": 5.3527748584747314,
+    "error": null
+   },
+   {
+    "batch": 19,
+    "ok": true,
+    "wall_s": 5.734898805618286,
+    "error": null
+   },
+   {
+    "batch": 22,
+    "ok": true,
+    "wall_s": 5.827987909317017,
+    "error": null
+   },
+   {
+    "batch": 23,
+    "ok": true,
+    "wall_s": 5.710460662841797,
+    "error": null
+   },
+   {
+    "batch": 24,
+    "ok": false,
+    "wall_s": 1.3982880115509033,
+    "error": "planned arena 26246138880 exceeds budget 25769803776"
+   }
+  ]
  }
 ]

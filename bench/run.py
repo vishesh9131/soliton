@@ -22,8 +22,9 @@ import time
 import pynvml
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-SCRIPTS = {"soliton": "soliton_gpt2.py", "pytorch": "torch_gpt2.py", "jax": "jax_gpt2.py", "tensorflow": "tf_gpt2.py"}
-CAN_PREDICT = ("soliton", "pytorch")
+SCRIPTS = {"soliton": "soliton_gpt2.py", "soliton+arena": "soliton_gpt2.py", "pytorch": "torch_gpt2.py",
+           "jax": "jax_gpt2.py", "tensorflow": "tf_gpt2.py"}
+CAN_PREDICT = ("soliton", "soliton+arena", "pytorch")
 GiB = 2**30
 # TensorFlow runs from its own venv (tensorflow[and-cuda]) because its CUDA wheels clash with PyTorch's.
 TF_PYTHON = os.environ.get("TF_PYTHON", os.path.join(HERE, "..", "..", ".venvs", "tf", "bin", "python"))
@@ -58,10 +59,15 @@ class GpuPeak:
 PRECISION = "fp32"  # set from --precision; every framework is held to the same one
 
 
+def predict_args(fw, args):
+    return args + ["--arena"] if fw == "soliton+arena" else args
+
+
 def run_args(fw, args):
     """Flags that only apply to real training runs, not predictions."""
-    if PRECISION == "tf32" and fw in ("soliton", "pytorch", "tensorflow"):
-        return args + ["--tf32"]
+    args = predict_args(fw, args)
+    if PRECISION == "tf32" and fw.startswith(("soliton", "pytorch", "tensorflow")):
+        args = args + ["--tf32"]
     return args
 
 
@@ -100,7 +106,8 @@ def e1(fws, batches, gpu, steps, out):
             row = dict(framework=fw, batch=b)
             if fw in CAN_PREDICT:
                 # Soliton predicts with no GPU visible at all; PyTorch's FakeTensorMode needs a CUDA device.
-                pr = launch(fw, ["--predict", "--batch", str(b)], gpu, visible=fw != "soliton")
+                pr = launch(fw, predict_args(fw, ["--predict", "--batch", str(b)]), gpu,
+                            visible=not fw.startswith("soliton"))
                 # PyTorch's MemTracker gives one allocation-level number; Soliton gives allocated and reserved.
                 row.update(predicted=pr.get("predicted"), predicted_alloc=pr.get("predicted_alloc", pr.get("predicted")),
                            predict_s=pr.get("predict_s"),
@@ -155,8 +162,9 @@ def e2(fws, gpu, budget_gib, hi, out):
             preds = []
 
             def predicted_fits(b):
-                if fw == "soliton":  # dry run under the budget itself: exact yes/no
-                    r = launch(fw, ["--predict", "--batch", str(b), "--budget-gib", str(budget_gib)], gpu, visible=False)
+                if fw.startswith("soliton"):  # dry run under the budget itself: exact yes/no
+                    r = launch(fw, predict_args(fw, ["--predict", "--batch", str(b), "--budget-gib", str(budget_gib)]),
+                               gpu, visible=False)
                     ok = bool(r.get("fits"))
                 else:  # MemTracker gives a peak; compare it with the budget
                     r = launch(fw, ["--predict", "--batch", str(b)], gpu)

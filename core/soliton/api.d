@@ -167,6 +167,92 @@ export extern (C) void sl_empty_cache(int dev)
     pools[dev].emptyCache();
 }
 
+// ---- static memory planning: record a trace, then replay it against one arena ----
+
+export extern (C) void sl_record_start(int dev)
+{
+    auto p = &pools[dev];
+    p.recCount = p.nmarks = 0;
+    p.recording = true;
+}
+
+export extern (C) void sl_record_stop(int dev)
+{
+    pools[dev].recording = false;
+}
+
+/// Note a step boundary while recording; the planner uses the last one as the start of the repeating body.
+export extern (C) void sl_record_mark(int dev)
+{
+    auto p = &pools[dev];
+    if (p.recording && p.nmarks < p.marks.length)
+        p.marks[p.nmarks++] = cast(long) p.recCount;
+    else if (p.arenaMode)
+        p.planCursor = p.planBody; // replay: the next step reuses the same offsets
+}
+
+export extern (C) long sl_record_count(int dev)
+{
+    return cast(long) pools[dev].recCount;
+}
+
+export extern (C) long sl_record_body(int dev)
+{
+    auto p = &pools[dev];
+    return p.nmarks ? p.marks[p.nmarks - 1] : 0;
+}
+
+export extern (C) void sl_record_get(int dev, long* size, long* start, long* end)
+{
+    auto p = &pools[dev];
+    foreach (i; 0 .. p.recCount)
+    {
+        size[i] = p.recSize[i];
+        start[i] = p.recStart[i];
+        end[i] = p.recEnd[i];
+    }
+}
+
+/// Install a plan: one arena allocation, then fixed offsets in the recorded order.
+export extern (C) int sl_arena_install(int dev, const(long)* offsets, const(long)* sizes, long count,
+    long body_, long arenaBytes)
+{
+    auto p = &pools[dev];
+    p.emptyCache();
+    void* a = p.rawAlloc(cast(size_t) arenaBytes);
+    if (!a)
+        return OOM;
+    p.arena = a;
+    p.arenaBytes = arenaBytes;
+    p.planOffset = offsets;
+    p.planSize = sizes;
+    p.planCount = cast(size_t) count;
+    p.planBody = cast(size_t) body_;
+    p.planCursor = 0;
+    p.arenaMode = true;
+    p.diverged = false;
+    p.reserved += arenaBytes;
+    if (p.reserved > p.peakReserved)
+        p.peakReserved = p.reserved;
+    return 0;
+}
+
+/// 0 while the run matches its plan; 1 once an allocation asked for a size the plan did not predict.
+export extern (C) int sl_arena_diverged(int dev)
+{
+    return pools[dev].diverged ? 1 : 0;
+}
+
+export extern (C) void sl_arena_off(int dev)
+{
+    auto p = &pools[dev];
+    if (!p.arenaMode)
+        return;
+    p.arenaMode = false;  // stop handing out offsets; new allocations go back to the pool
+    if (p.allocated == 0)
+        p.releaseArena();  // otherwise the last arena-backed release frees it
+}
+
 export extern (C) void sl_set_limit(int dev, long bytes)
 {
     pools[dev].limit = bytes;

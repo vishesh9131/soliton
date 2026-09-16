@@ -15,6 +15,11 @@ Errors compare the prediction with the framework's own allocator peaks: allocate
 | soliton | 4 | 6.34 | 5.41 / 6.34 | +0.00% | +0.00% | 0.01s | 0.00 | 6.61 | 14,926 |
 | soliton | 8 | 10.27 | 9.23 / 10.27 | +0.00% | +0.00% | 0.01s | 0.00 | 10.54 | 16,678 |
 | soliton | 16 | 18.11 | 16.85 / 18.11 | +0.00% | +0.00% | 0.01s | 0.00 | 18.38 | 17,759 |
+| soliton+arena | 1 | 2.60 | 2.60 / 2.60 | +0.00% | +0.00% | 0.62s | 0.00 | 2.90 | 10,001 |
+| soliton+arena | 2 | 3.48 | 3.48 / 3.48 | +0.00% | +0.00% | 0.48s | 0.00 | 3.78 | 13,117 |
+| soliton+arena | 4 | 5.38 | 5.38 / 5.38 | +0.00% | +0.00% | 0.68s | 0.00 | 5.69 | 14,903 |
+| soliton+arena | 8 | 9.19 | 9.19 / 9.19 | +0.00% | +0.00% | 0.43s | 0.00 | 9.50 | 16,714 |
+| soliton+arena | 16 | 16.81 | 16.81 / 16.81 | +0.00% | +0.00% | 0.45s | 0.00 | 17.12 | 17,661 |
 | pytorch | 1 | 3.10 | 3.13 / 3.39 | -0.93% | -8.61% | 5.31s | 0.26 | 3.71 | 11,281 |
 | pytorch | 2 | 4.80 | 4.83 / 5.14 | -0.51% | -6.49% | 5.36s | 0.26 | 5.46 | 13,212 |
 | pytorch | 4 | 8.22 | 8.24 / 8.94 | -0.28% | -8.10% | 5.33s | 0.26 | 9.26 | 14,618 |
@@ -36,6 +41,7 @@ Errors compare the prediction with the framework's own allocator peaks: allocate
 | framework | answer from prediction | time, no training runs | correct? | true max (real bisection) | real bisection time | runs / OOMs |
 |---|---|---|---|---|---|---|
 | soliton | 23 | 2s | yes | 23 | 30s | 7 / 2 |
+| soliton+arena | 23 | 7s | yes | 23 | 34s | 7 / 2 |
 | pytorch | 13 | 51s | no | 12 | 43s | 7 / 2 |
 | jax | no API | — | — | 16 | 187s | 6 / 3 |
 | tensorflow | no API | — | — | 8 | 183s | 7 / 4 |

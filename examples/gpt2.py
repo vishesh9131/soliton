@@ -66,8 +66,9 @@ CONFIGS = {
 
 
 def train_step(model, opt, batches, clip=1.0):
-    """One optimizer step over micro-batches. Identical on meta and real devices."""
-    opt.zero_grad()
+    """One optimizer step over micro-batches. Identical on meta and real devices.
+
+    Every allocation made here is also released here, which is what lets one arena plan repeat per step."""
     total = 0.0
     for idx, tgt in batches:
         loss = model(idx, tgt)
@@ -77,6 +78,7 @@ def train_step(model, opt, batches, clip=1.0):
     distributed.all_reduce_grads(opt.params)  # no-op for one process
     norm = clip_grad_norm(opt.params, clip)
     opt.step()
+    opt.zero_grad()  # at the end, so gradients do not outlive the step
     return total, norm
 
 
@@ -88,6 +90,9 @@ def run(device, cfg, batch, seq, accum, steps, get_batch=None, lr=6e-4, log=None
     opt = AdamW(model.parameters(), lr=lr)
     losses = []
     for step in range(steps):
+        # The step boundary has to come before the batch tensors are allocated: they are part of the
+        # repeating body, so the arena cursor must rewind ahead of them.
+        sl.arena.mark(device)
         if get_batch is None:  # meta: shapes only, but one allocation per tensor exactly like the real path
             batches = [(sl.empty((batch, seq), device, "int32"), sl.empty((batch, seq), device, "int32"))
                        for _ in range(accum)]
