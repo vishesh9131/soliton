@@ -1,11 +1,5 @@
 <p align="center">
-  <img src="assets/soliton-logo.svg" alt="Soliton" width="620">
-</p>
-
-<h1 align="center">Soliton</h1>
-
-<p align="center">
-  A deep-learning framework that plans the GPU memory required for training before the run starts.
+  <img src="assets/soliton-banner.png" alt="Soliton — framework that plans the GPU memory required for training before the run starts" width="908">
 </p>
 
 <p align="center">
