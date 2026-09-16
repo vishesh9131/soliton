@@ -17,7 +17,10 @@ build/kernels.o: core/cuda/kernels.cu
 	@mkdir -p build
 	nvcc -O3 -std=c++17 -arch=$(CUDA_ARCH) -Xcompiler -fPIC -I$(CUDA_INC) -I$(NCCL_HOME)/include -c $< -o $@
 
-clean:
-	rm -rf build $(OUT)
+docs:  # HTML documentation in docs/build
+	python -m sphinx -b html docs/source docs/build
 
-.PHONY: clean
+clean:
+	rm -rf build docs/build $(OUT)
+
+.PHONY: clean docs

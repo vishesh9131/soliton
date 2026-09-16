@@ -6,23 +6,76 @@
   <strong>Experimental.</strong> Soliton is a research-stage framework with a Python API, a D/LDC core, CUDA kernels, and a deterministic memory allocator.
 </p>
 
+<p align="center">
+  <a href="https://vishesh9131.github.io/soliton/">Documentation</a> ·
+  <a href="https://vishesh9131.github.io/soliton/benchmarks.html">Benchmarks</a> ·
+  <a href="https://vishesh9131.github.io/soliton/get-started/quickstart.html">Quickstart</a>
+</p>
+
 ## Evidence first
 
 The main claim is deliberately narrow and testable: given the same training step and allocator policy, a Soliton dry run on its `meta` device predicts the real peak reserved GPU memory exactly—without launching GPU kernels.
 
-The checked benchmark is GPT-2 124M, sequence length 1024, AdamW, on one NVIDIA RTX A6000. Soliton, PyTorch, JAX, and TensorFlow were run under matched FP32 and TF32 regimes. Full raw tables are included in [`bench/results/fp32/REPORT.md`](bench/results/fp32/REPORT.md) and [`bench/results/tf32/REPORT.md`](bench/results/tf32/REPORT.md).
+Everything below is measured on GPT-2 124M, sequence length 1024, AdamW, one NVIDIA RTX A6000. Soliton, PyTorch, JAX, TensorFlow and tinygrad were held to the same matmul precision in each regime. Raw tables: [`bench/results/fp32/REPORT.md`](bench/results/fp32/REPORT.md) and [`bench/results/tf32/REPORT.md`](bench/results/tf32/REPORT.md).
 
-| Measured result | Outcome |
+### Memory for one training step
+
+![Peak GPU memory per framework](assets/chart-memory.png)
+
+Soliton reserves less than half of what JAX's process needs and 42% less than PyTorch, because the allocation
+trace is known in advance and can be packed into one arena with no fragmentation.
+
+| Framework | Peak reserved, batch 8 | Can it predict this before running? | Cost of predicting |
+| --- | --- | --- | --- |
+| **Soliton (arena)** | **9.20 GiB** | **Yes — 0 bytes of error** | 0.4 s, no GPU |
+| Soliton (caching pool) | 10.27 GiB | Yes — 0 bytes of error | 0.01 s, no GPU |
+| PyTorch | 15.83 GiB | Estimate, 5.0–8.6% too low | 5.4 s, needs a GPU |
+| TensorFlow | 22.92 GiB | No API | — |
+| JAX | 34.28 GiB (process peak) | No API | — |
+
+The prediction is exact at batches 1, 2, 4, 8 and 16, in both precision regimes, for both allocators. Packing
+the arena wastes **0.00%** against the max-live lower bound, and costs nothing in speed (0.998×).
+
+### The question people actually ask: what batch fits?
+
+![Largest batch that trains under a 24 GiB budget](assets/chart-maxbatch.png)
+
+| Framework | Largest batch under 24 GiB | How that answer was reached |
+| --- | --- | --- |
+| **Soliton, auto-fit** | **52** | solver picks 13 units to recompute, 6 s, no GPU, then verified by training |
+| **Soliton** | **23** | predicted in 2 s with no GPU, correct first time |
+| JAX | 16 | no way to ask: 6 real training runs, 3 of them crashes, 187 s |
+| PyTorch | 12 | its own estimator said 13, which runs out of memory; 7 real runs to find 12 |
+| TensorFlow | 8 | no way to ask: 7 real runs, 4 crashes, 183 s |
+
+### Throughput
+
+![Training throughput in both precisions](assets/chart-throughput.png)
+
+Soliton is faster than PyTorch and slower than JAX at this workload. Two places it wins outright:
+
+| Workload | Soliton | PyTorch | JAX | TensorFlow | tinygrad |
+| --- | --- | --- | --- | --- | --- |
+| Elementwise chain, 16M floats | **0.31 ms** | 1.05 | 0.35 | 18.3 | 6.40 |
+| 20 steps at changing sequence length | **915 ms** | 867 | 76,514 | — | — |
+
+The chain is the fusion compiler: five kernels become one generated kernel at 666 GB/s, near this card's
+bandwidth ceiling. The second row is what compilation costs elsewhere — JAX recompiles for every new shape,
+while Soliton's generated kernels take the size as an argument and are never recompiled.
+
+### What the memory plan makes possible
+
+| Capability | Measured result |
 | --- | --- |
-| Memory-plan accuracy | **0 bytes error** against Soliton's peak reserved memory at batches 1, 2, 4, 8, and 16 |
-| Planning cost | **0.01 s** with **0 GPU memory** used for the plan |
-| Static memory planning | **9.20 GiB** peak reserved at batch 8 against **10.27 GiB** for the caching pool (−10.5%), packed with **0.00%** waste and unchanged throughput |
-| Maximum GPT-2 batch under 24 GiB | **23**, chosen from dry runs and verified by a real training run |
-| Auto-fit under the same 24 GiB cap | **Batch 52** by choosing activation checkpointing; predicted and actual peak: **23.97 GiB** |
-| FP32 throughput at batch 8 | **16,678 tokens/s**; PyTorch: 15,576; JAX: 18,037; TensorFlow: 11,447 |
-| TF32 throughput at batch 16 | **28,927 tokens/s**; PyTorch: 25,440; JAX did not fit at that batch |
+| Static arena allocation | 0.00% packing waste; −10.5% memory at batch 8, −21.7% at batch 1 |
+| Solved recomputation | fits 24 GiB at batch 32 with 11 recomputed units against 14 for whole-block checkpointing, 1.026× faster |
+| Reproducibility | bit-identical weights across processes **and across two GPUs**; each precision and fusion setting self-consistent |
+| Pre-flight check | whole step validated in 11 ms with no GPU, naming the module a shape error came from |
 
-Those results do **not** claim that Soliton is universally faster or more mature than existing frameworks. On this machine and workload, JAX remains faster at throughput where it fits, and PyTorch's FlashAttention remains roughly 2× faster than Soliton's attention benchmark. The reproducible evidence is the memory-planning guarantee and the measured budget-fitting workflow.
+Those results do **not** claim that Soliton is universally faster or more mature than existing frameworks. On
+this machine and workload JAX remains faster where it fits, PyTorch's FlashAttention is roughly 2× faster than
+Soliton's attention, and `torch.compile` could not run here at all (Inductor raises "duplicate template name"
+on torch 2.10 with Triton 3.6). The reproducible evidence is the memory guarantee and the workflows it enables.
 
 ### What makes the plan exact?
 
@@ -83,12 +136,12 @@ Example output:
 
 ```text
 [plan] GPT-2 124M: 124.4M params, batch 8x1024, accum 1
-[plan] peak allocated 13.870 GiB, peak reserved 15.637 GiB
+[plan] peak allocated 9.226 GiB, peak reserved 10.268 GiB (dry run took 0.01s, no GPU used)
 ```
 
 ### Train under a hard memory budget
 
-Prepare the TinyStories data, then let Soliton choose the fewest GPT-2 blocks to checkpoint in order to fit the stated cap.
+Prepare the TinyStories data, then let Soliton solve which attention and MLP halves to recompute so the step fits the stated cap.
 
 ```bash
 PYTHONPATH=python python examples/prepare_tinystories.py
@@ -134,6 +187,7 @@ Implemented today:
 - Float32 tensors, reverse-mode autograd, common neural-network modules, AdamW, CPU and CUDA backends
 - Deterministic caching allocator, `meta` planning, a hard memory cap, and checkpoint auto-fit
 - Static arena planning (`sl.arena`): one allocation for the whole run, offsets solved offline from the trace
+- Solved recomputation (`sl.recompute`), a pre-flight checker (`sl.preflight`), and reproducible runs
 - GPT-2 124M training with fused causal attention and data parallelism over NCCL
 - Opt-in TF32 and an elementwise CUDA fusion path
 

@@ -19,7 +19,14 @@ class Module:
         return [p for _, p in self.named_parameters()]
 
     def __call__(self, *args, **kwargs):
-        return self.forward(*args, **kwargs)
+        T._scope.append(type(self).__name__)
+        try:
+            return self.forward(*args, **kwargs)
+        except Exception:
+            T._fail_scope = list(T._scope)  # capture before the stack unwinds
+            raise
+        finally:
+            T._scope.pop()
 
 
 class Linear(Module):

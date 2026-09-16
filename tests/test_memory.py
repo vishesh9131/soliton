@@ -50,16 +50,18 @@ def test_checkpoint_gives_same_grads_and_less_memory():
     assert peaks[2] < peaks[0]
 
 
-def test_fit_checkpoints_is_minimal():
-    # The real config on the meta device: free, and big enough that checkpointing changes the peak.
+def test_solver_fits_the_budget_with_fewer_units_than_everything():
+    # The real config on the meta device: free, and big enough that recomputation changes the peak.
     cfg, b, t, n = "124M", 4, 1024, CONFIGS["124M"]["n_layer"]
     need = lambda k: sl.plan(lambda d: run(d, cfg, b, t, 1, 2, checkpoint=k))["peak_reserved"]  # noqa: E731
     assert need(n) < need(0)
-    budget = (need(0) + need(n)) // 2  # fits with full checkpointing, not without
-    k = fit_checkpoints(cfg, b, t, 1, budget)
-    assert k is not None and k > 0
-    assert sl.plan(lambda d: run(d, cfg, b, t, 1, 2, checkpoint=k), budget) is not None
-    assert sl.plan(lambda d: run(d, cfg, b, t, 1, 2, checkpoint=k - 1), budget) is None
+    budget = (need(0) + need(n)) // 2  # fits with everything recomputed, not with nothing
+
+    units, peak = fit_checkpoints(cfg, b, t, 1, budget)
+    assert units is not None and 0 < len(units) < 2 * n, "should need some units, but not all of them"
+    assert peak <= budget
+    # the reported peak is what a run under that cap really reserves
+    assert sl.plan(lambda d: run(d, cfg, b, t, 1, 2, checkpoint=units), budget)["peak_reserved"] == peak
 
 
 def test_limit_below_plan_fails_and_at_plan_succeeds():

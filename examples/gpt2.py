@@ -20,8 +20,8 @@ from soliton.optim import AdamW, clip_grad_norm  # noqa: E402
 
 
 class Block(nn.Module):
-    def __init__(self, c, n_head, n_layer, device, rng):
-        self.n_head = n_head
+    def __init__(self, c, n_head, n_layer, device, rng, idx=0):
+        self.n_head, self.idx, self.ckpt = n_head, idx, frozenset()
         proj_std = 0.02 / math.sqrt(2 * n_layer)
         self.ln1, self.ln2 = nn.LayerNorm(c, device), nn.LayerNorm(c, device)
         self.qkv = nn.Linear(c, 3 * c, device=device, rng=rng)  # one gemm, packed for fused attention
@@ -29,14 +29,26 @@ class Block(nn.Module):
         self.fc = nn.Linear(c, 4 * c, device=device, rng=rng)
         self.fc_proj = nn.Linear(4 * c, c, device=device, std=proj_std, rng=rng)
 
-    def forward(self, x):
+    def attn(self, x):
         b, t, c = x.shape
         h, hs = self.n_head, c // self.n_head
         # Packed (B,T,3,H,hs) goes straight into fused causal attention: no transposes, no (B,H,T,T) tensor.
         qkv = sl.reshape(self.qkv(self.ln1(x)), (b, t, 3, h, hs))
-        y = sl.reshape(sl.attention(qkv), (b, t, c))
-        x = x + self.proj(y)
+        return x + self.proj(sl.reshape(sl.attention(qkv), (b, t, c)))
+
+    def mlp(self, x):
         return x + self.fc_proj(sl.gelu(self.fc(self.ln2(x))))
+
+    def both(self, x):
+        return self.mlp(self.attn(x))
+
+    def forward(self, x):
+        """Recomputable as halves or as a whole block. Whole is cheaper in memory (one boundary activation
+        instead of two), halves are finer, so the solver gets to choose per block."""
+        if f"{self.idx}.block" in self.ckpt:
+            return sl.checkpoint(self.both, x)
+        x = sl.checkpoint(self.attn, x) if f"{self.idx}.attn" in self.ckpt else self.attn(x)
+        return sl.checkpoint(self.mlp, x) if f"{self.idx}.mlp" in self.ckpt else self.mlp(x)
 
 
 class GPT(nn.Module):
@@ -47,14 +59,16 @@ class GPT(nn.Module):
         self.checkpoint = checkpoint  # recompute the first `checkpoint` blocks in backward
         self.wte = nn.Embedding(vocab, n_embd, device, rng=rng)
         self.wpe = nn.Embedding(block_size, n_embd, device, rng=rng)
-        self.blocks = [Block(n_embd, n_head, n_layer, device, rng) for _ in range(n_layer)]
+        self.blocks = [Block(n_embd, n_head, n_layer, device, rng, i) for i in range(n_layer)]
+        for b in self.blocks:
+            b.ckpt = checkpoint_units(checkpoint, n_layer)
         self.ln_f = nn.LayerNorm(n_embd, device)
 
     def forward(self, idx, targets):
         _, t = idx.shape
         x = self.wte(idx) + self.wpe(sl.tensor(np.arange(t, dtype=np.int32), self.device))
-        for i, block in enumerate(self.blocks):
-            x = sl.checkpoint(block, x) if i < self.checkpoint else block(x)
+        for block in self.blocks:
+            x = block(x)
         logits = sl.linear(self.ln_f(x), self.wte.weight)  # tied weights
         return sl.cross_entropy(logits, targets)
 
@@ -109,16 +123,27 @@ def run(device, cfg, batch, seq, accum, steps, get_batch=None, lr=6e-4, log=None
     return stats, losses, model, opt
 
 
-def fit_checkpoints(cfg, batch, seq, accum, budget):
-    """Fewest checkpointed blocks whose dry run fits `budget` bytes (bisection over meta runs), or None."""
-    fits = lambda k: sl.plan(lambda dev: run(dev, cfg, batch, seq, accum, 2, checkpoint=k), budget) is not None  # noqa: E731
-    lo, hi = 0, CONFIGS[cfg]["n_layer"]
-    if not fits(hi):
-        return None
-    while lo < hi:
-        mid = (lo + hi) // 2
-        lo, hi = (lo, mid) if fits(mid) else (mid + 1, hi)
-    return lo
+def checkpoint_units(checkpoint, n_layer):
+    """An int means the first k blocks entirely; otherwise an explicit set of "<block>.attn"/"<block>.mlp" ids."""
+    if isinstance(checkpoint, int):
+        return frozenset(f"{i}.block" for i in range(checkpoint))
+    return frozenset(checkpoint)
+
+
+def units_of(cfg):
+    return [f"{i}.{p}" for i in range(CONFIGS[cfg]["n_layer"]) for p in ("attn", "mlp", "block")]
+
+
+def fit_checkpoints(cfg, batch, seq, accum, budget, cost=None):
+    """Least-cost set of attention/MLP halves to recompute so the step fits `budget`. Returns (set, peak)."""
+    make = lambda ck: (lambda dev: run(dev, cfg, batch, seq, accum, 2, checkpoint=ck))  # noqa: E731
+    units, peak = sl.recompute.solve(make, units_of(cfg), budget, cost)
+    if units:  # a whole-block choice subsumes that block's halves; drop them and re-verify
+        blocks = {u.split(".")[0] for u in units if u.endswith(".block")}
+        trimmed = frozenset(u for u in units if u.endswith(".block") or u.split(".")[0] not in blocks)
+        if trimmed != units:
+            units, peak = trimmed, sl.recompute.peak_for(make, trimmed, budget)
+    return units, peak
 
 
 def gib(n):
@@ -156,11 +181,11 @@ def main():
     budget = int(args.budget_gib * 2**30) if args.budget_gib else 0
     ckpt = 0
     if budget:
-        ckpt = fit_checkpoints(args.config, args.batch, args.seq, args.accum, budget)
+        ckpt, fit_peak = fit_checkpoints(args.config, args.batch, args.seq, args.accum, budget)
         if ckpt is None:
-            sys.exit(f"[plan] does not fit {args.budget_gib} GiB even with every block checkpointed")
-        say(f"[plan] fits {args.budget_gib} GiB by checkpointing {ckpt}/{CONFIGS[args.config]['n_layer']} blocks "
-            f"(search took {time.time() - t0:.2f}s, no GPU used)")
+            sys.exit(f"[plan] does not fit {args.budget_gib} GiB even with everything recomputed")
+        say(f"[plan] fits {args.budget_gib} GiB by recomputing {len(ckpt)} of {len(units_of(args.config))} "
+            f"units ({fit_peak / 2**30:.3f} GiB), solved in {time.time() - t0:.2f}s with no GPU")
     plan = sl.plan(lambda dev: run(dev, args.config, args.batch, args.seq, args.accum, 2, checkpoint=ckpt), budget)
     params = nn.num_params(GPT(**{**CONFIGS[args.config], "device": "meta"}))
     sl.empty_cache("meta")

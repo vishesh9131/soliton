@@ -1,0 +1,23 @@
+/* Soliton's own identity: teal for the thing we guarantee, rust for what we cost you. */
+html[data-theme="light"] {
+  --pst-color-primary: #0e7a6b;
+  --pst-color-secondary: #b0521c;
+  --pst-color-link: #0e7a6b;
+  --pst-color-background: #ffffff;
+  --pst-color-on-background: #f5f7f6;
+}
+html[data-theme="dark"] {
+  --pst-color-primary: #45c6b2;
+  --pst-color-secondary: #e58d57;
+  --pst-color-link: #45c6b2;
+  --pst-color-background: #0e1311;
+  --pst-color-on-background: #151c19;
+}
+.bd-page-width { max-width: 92rem; }
+h1, h2, h3 { letter-spacing: -0.01em; }
+.hero { padding: 2.5rem 0 1rem; }
+.hero h1 { font-size: clamp(2rem, 5vw, 3rem); line-height: 1.05; margin-bottom: .6rem; }
+.hero p.lead { font-size: 1.15rem; color: var(--pst-color-text-muted); max-width: 46rem; }
+.ledger { font-family: var(--pst-font-family-monospace); background: var(--pst-color-on-background);
+          border: 1px solid var(--pst-color-border); border-radius: 6px; padding: 1rem 1.2rem; }
+.ledger b { color: var(--pst-color-primary); }

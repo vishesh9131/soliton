@@ -22,6 +22,7 @@ from ._C import lib, longs
 DEVICES = ("cpu", "meta", "cuda")
 CPU, META, CUDA = 0, 1, 2
 
+_scope, _fail_scope = [], []  # module breadcrumbs, for preflight error messages
 _ordinal = int(os.environ.get("LOCAL_RANK", 0))
 _ready = set()
 _grad_on = True
@@ -396,7 +397,7 @@ def _ew2(op, a, b):
 
 
 def checkpoint(fn, *inputs):
-    """Run fn(*inputs) without keeping its activations; recompute them during backward.
+    """Run ``fn(*inputs)`` without keeping its activations; recompute them during backward.
     Trades one extra forward of fn for its activation memory."""
     with no_grad():
         out = fn(*inputs)

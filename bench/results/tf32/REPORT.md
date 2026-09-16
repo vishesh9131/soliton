@@ -52,4 +52,4 @@ Soliton may also pick how many blocks to checkpoint (recompute in backward). The
 
 | framework | largest batch | blocks checkpointed | planning time, no GPU | trains under cap | peak reserved predicted / actual GiB | tok/s |
 |---|---|---|---|---|---|---|
-| soliton+autofit | 52 | 12 / 12 | 2s | yes | 23.97 / 23.97 | 22,569 |
+| soliton+autofit | 52 | 13 / 12 | 6s | yes | 23.98 / 23.98 | 22,540 |

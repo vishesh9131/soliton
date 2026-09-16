@@ -6,3 +6,4 @@ data/
 __pycache__/
 .pytest_cache/
 bench/results/*.log
+docs/build/

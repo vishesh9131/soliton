@@ -16,7 +16,8 @@ V = 50257
 
 
 def choose_checkpoints(batch, seq, budget, autofit):
-    return fit_checkpoints("124M", batch, seq, 1, budget) if autofit else 0
+    """Solver picks which attention/MLP halves to recompute; None when nothing fits."""
+    return fit_checkpoints("124M", batch, seq, 1, budget)[0] if autofit else 0
 
 
 def arena_plan(batch, seq, k):
@@ -36,10 +37,11 @@ def predict(batch, seq, budget_gib=None, autofit=False, arena=False):
         return dict(framework=name, batch=batch, seq=seq, fits=False, checkpoint=None, predict_s=time.time() - t0)
     if arena:
         p = arena_plan(batch, seq, k)
-        return dict(framework=name, batch=batch, seq=seq, fits=not budget or p.bytes <= budget, checkpoint=k,
+        return dict(framework=name, batch=batch, seq=seq, fits=not budget or p.bytes <= budget, checkpoint=k if isinstance(k, int) else len(k),
                     predicted=p.bytes, predicted_alloc=p.live_peak, predict_s=time.time() - t0)
     stats = sl.plan(lambda d: gpt_run(d, "124M", batch, seq, 1, 2, checkpoint=k), budget)
-    out = dict(framework=name, batch=batch, seq=seq, fits=stats is not None, checkpoint=k, predict_s=time.time() - t0)
+    out = dict(framework=name, batch=batch, seq=seq, fits=stats is not None,
+           checkpoint=k if isinstance(k, int) else len(k), predict_s=time.time() - t0)
     if stats is not None:
         out.update(predicted=stats["peak_reserved"], predicted_alloc=stats["peak_allocated"])
     return out
@@ -53,7 +55,7 @@ def run(batch, seq, steps, budget_gib=None, autofit=False, tf32=False, arena=Fal
     k = choose_checkpoints(batch, seq, budget, autofit)
     if k is None:
         return dict(out, oom=True, error="planned: does not fit even with every block checkpointed")
-    out["checkpoint"] = k
+    out["checkpoint"] = k if isinstance(k, int) else len(k)
     plan = None
     if arena:  # one allocation for the whole run, sized by the plan
         plan = arena_plan(batch, seq, k)
