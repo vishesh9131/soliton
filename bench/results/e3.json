@@ -1,0 +1,65 @@
+[
+ {
+  "framework": "soliton+autofit",
+  "budget_gib": 24.0,
+  "max_batch": 52,
+  "checkpoint": 12,
+  "predicted": 25628041728,
+  "plan_s": 3.9257023334503174,
+  "plan_calls": [
+   {
+    "batch": 1,
+    "fits": true,
+    "checkpoint": 0,
+    "predicted": 4447262208,
+    "wall_s": 0.6700229644775391
+   },
+   {
+    "batch": 33,
+    "fits": true,
+    "checkpoint": 10,
+    "predicted": 25500878336,
+    "wall_s": 0.5007555484771729
+   },
+   {
+    "batch": 49,
+    "fits": true,
+    "checkpoint": 12,
+    "predicted": 25475780096,
+    "wall_s": 0.6282224655151367
+   },
+   {
+    "batch": 57,
+    "fits": false,
+    "checkpoint": null,
+    "predicted": null,
+    "wall_s": 0.293729305267334
+   },
+   {
+    "batch": 53,
+    "fits": false,
+    "checkpoint": null,
+    "predicted": null,
+    "wall_s": 0.30626940727233887
+   },
+   {
+    "batch": 51,
+    "fits": true,
+    "checkpoint": 12,
+    "predicted": 25665984000,
+    "wall_s": 0.8324868679046631
+   },
+   {
+    "batch": 52,
+    "fits": true,
+    "checkpoint": 12,
+    "predicted": 25628041728,
+    "wall_s": 0.692976713180542
+   }
+  ],
+  "trains": true,
+  "native_peak": 25628041728,
+  "tok_s": 9914.446161087693,
+  "error": null
+ }
+]

@@ -1,0 +1,8 @@
+build/
+python/soliton/libsoliton.so
+python/soliton/libsoliton.so.tmp
+python/soliton/*.o
+data/
+__pycache__/
+.pytest_cache/
+bench/results/*.log

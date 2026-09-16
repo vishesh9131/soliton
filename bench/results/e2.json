@@ -1,0 +1,300 @@
+[
+ {
+  "framework": "pytorch",
+  "budget_gib": 24.0,
+  "predicted_max": 13,
+  "predict_search_s": 51.84761309623718,
+  "predict_calls": [
+   {
+    "batch": 1,
+    "predicted": 3325308928,
+    "fits": true,
+    "wall_s": 8.628921031951904
+   },
+   {
+    "batch": 25,
+    "predicted": 47293837312,
+    "fits": false,
+    "wall_s": 8.649458408355713
+   },
+   {
+    "batch": 13,
+    "predicted": 25309573120,
+    "fits": true,
+    "wall_s": 8.649876117706299
+   },
+   {
+    "batch": 19,
+    "predicted": 36301705216,
+    "fits": false,
+    "wall_s": 8.66176462173462
+   },
+   {
+    "batch": 16,
+    "predicted": 30805639168,
+    "fits": false,
+    "wall_s": 8.51589846611023
+   },
+   {
+    "batch": 14,
+    "predicted": 27141595136,
+    "fits": false,
+    "wall_s": 8.740535259246826
+   }
+  ],
+  "predicted_max_trains": false,
+  "predicted_max_plus1_ooms": true,
+  "true_max": 12,
+  "real_search_s": 42.79260015487671,
+  "real_search_runs": 7,
+  "real_search_ooms": 2,
+  "real_runs": [
+   {
+    "batch": 1,
+    "ok": true,
+    "wall_s": 5.014223098754883,
+    "error": null
+   },
+   {
+    "batch": 25,
+    "ok": false,
+    "wall_s": 4.703050374984741,
+    "error": "CUDA out of memory. Tried to allocate 1.17 GiB. GPU 0 has a total capacity of 47.41 GiB of which 23.78 GiB is free. Including non-PyTorch memory, this process has 23.61 GiB memory in use. 24.00 GiB al"
+   },
+   {
+    "batch": 13,
+    "ok": false,
+    "wall_s": 5.957002639770508,
+    "error": "CUDA out of memory. Tried to allocate 2.49 GiB. GPU 0 has a total capacity of 47.41 GiB of which 24.21 GiB is free. Including non-PyTorch memory, this process has 23.18 GiB memory in use. 24.00 GiB al"
+   },
+   {
+    "batch": 7,
+    "ok": true,
+    "wall_s": 6.4734039306640625,
+    "error": null
+   },
+   {
+    "batch": 10,
+    "ok": true,
+    "wall_s": 6.712106943130493,
+    "error": null
+   },
+   {
+    "batch": 11,
+    "ok": true,
+    "wall_s": 6.8409693241119385,
+    "error": null
+   },
+   {
+    "batch": 12,
+    "ok": true,
+    "wall_s": 7.090027093887329,
+    "error": null
+   }
+  ]
+ },
+ {
+  "framework": "jax",
+  "budget_gib": 24.0,
+  "true_max": 15,
+  "real_search_s": 323.47729325294495,
+  "real_search_runs": 7,
+  "real_search_ooms": 3,
+  "real_runs": [
+   {
+    "batch": 1,
+    "ok": true,
+    "wall_s": 35.27006721496582,
+    "error": null
+   },
+   {
+    "batch": 25,
+    "ok": false,
+    "wall_s": 57.88020896911621,
+    "error": "RESOURCE_EXHAUSTED: Out of memory while trying to allocate 32556655472 bytes."
+   },
+   {
+    "batch": 13,
+    "ok": true,
+    "wall_s": 41.2369499206543,
+    "error": null
+   },
+   {
+    "batch": 19,
+    "ok": false,
+    "wall_s": 54.26831412315369,
+    "error": "RESOURCE_EXHAUSTED: Out of memory while trying to allocate 24677327728 bytes."
+   },
+   {
+    "batch": 16,
+    "ok": false,
+    "wall_s": 49.41403770446777,
+    "error": "RESOURCE_EXHAUSTED: Out of memory while trying to allocate 24376251760 bytes."
+   },
+   {
+    "batch": 14,
+    "ok": true,
+    "wall_s": 43.25159525871277,
+    "error": null
+   },
+   {
+    "batch": 15,
+    "ok": true,
+    "wall_s": 42.15307354927063,
+    "error": null
+   }
+  ]
+ },
+ {
+  "framework": "tensorflow",
+  "budget_gib": 24.0,
+  "true_max": 8,
+  "real_search_s": 173.31168270111084,
+  "real_search_runs": 7,
+  "real_search_ooms": 4,
+  "real_runs": [
+   {
+    "batch": 1,
+    "ok": true,
+    "wall_s": 17.36054515838623,
+    "error": null
+   },
+   {
+    "batch": 25,
+    "ok": false,
+    "wall_s": 32.36705136299133,
+    "error": "Graph execution error:"
+   },
+   {
+    "batch": 13,
+    "ok": false,
+    "wall_s": 29.756143808364868,
+    "error": "Graph execution error:"
+   },
+   {
+    "batch": 7,
+    "ok": true,
+    "wall_s": 18.08135414123535,
+    "error": null
+   },
+   {
+    "batch": 10,
+    "ok": false,
+    "wall_s": 31.012676239013672,
+    "error": "Graph execution error:"
+   },
+   {
+    "batch": 8,
+    "ok": true,
+    "wall_s": 18.571268796920776,
+    "error": null
+   },
+   {
+    "batch": 9,
+    "ok": false,
+    "wall_s": 26.160813570022583,
+    "error": "Graph execution error:"
+   }
+  ]
+ },
+ {
+  "framework": "soliton",
+  "budget_gib": 24.0,
+  "predicted_max": 14,
+  "predict_search_s": 2.3344168663024902,
+  "predict_calls": [
+   {
+    "batch": 1,
+    "predicted": 4447262208,
+    "fits": true,
+    "wall_s": 0.37609267234802246
+   },
+   {
+    "batch": 25,
+    "predicted": null,
+    "fits": false,
+    "wall_s": 0.2628211975097656
+   },
+   {
+    "batch": 13,
+    "predicted": 25639860736,
+    "fits": true,
+    "wall_s": 0.2937331199645996
+   },
+   {
+    "batch": 19,
+    "predicted": null,
+    "fits": false,
+    "wall_s": 0.27030348777770996
+   },
+   {
+    "batch": 16,
+    "predicted": null,
+    "fits": false,
+    "wall_s": 0.27965855598449707
+   },
+   {
+    "batch": 14,
+    "predicted": 25633404416,
+    "fits": true,
+    "wall_s": 0.5267443656921387
+   },
+   {
+    "batch": 15,
+    "predicted": null,
+    "fits": false,
+    "wall_s": 0.3242037296295166
+   }
+  ],
+  "predicted_max_trains": true,
+  "predicted_max_plus1_ooms": true,
+  "true_max": 14,
+  "real_search_s": 31.580406427383423,
+  "real_search_runs": 7,
+  "real_search_ooms": 4,
+  "real_runs": [
+   {
+    "batch": 1,
+    "ok": true,
+    "wall_s": 4.445936679840088,
+    "error": null
+   },
+   {
+    "batch": 25,
+    "ok": false,
+    "wall_s": 3.5910627841949463,
+    "error": "soliton: out of memory on cuda allocating 1.17 GiB (allocated 23.36 GiB, reserved 23.36 GiB)"
+   },
+   {
+    "batch": 13,
+    "ok": true,
+    "wall_s": 6.725398302078247,
+    "error": null
+   },
+   {
+    "batch": 19,
+    "ok": false,
+    "wall_s": 3.626330614089966,
+    "error": "soliton: out of memory on cuda allocating 3.64 GiB (allocated 23.33 GiB, reserved 23.33 GiB)"
+   },
+   {
+    "batch": 16,
+    "ok": false,
+    "wall_s": 3.4382221698760986,
+    "error": "soliton: out of memory on cuda allocating 3.07 GiB (allocated 22.91 GiB, reserved 22.91 GiB)"
+   },
+   {
+    "batch": 14,
+    "ok": true,
+    "wall_s": 6.250637769699097,
+    "error": null
+   },
+   {
+    "batch": 15,
+    "ok": false,
+    "wall_s": 3.501150369644165,
+    "error": "soliton: out of memory on cuda allocating 2.88 GiB (allocated 21.68 GiB, reserved 21.68 GiB)"
+   }
+  ]
+ }
+]

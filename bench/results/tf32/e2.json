@@ -1,0 +1,294 @@
+[
+ {
+  "framework": "soliton",
+  "budget_gib": 24.0,
+  "predicted_max": 23,
+  "predict_search_s": 1.8642618656158447,
+  "predict_calls": [
+   {
+    "batch": 1,
+    "predicted": 3563441152,
+    "fits": true,
+    "wall_s": 0.2589864730834961
+   },
+   {
+    "batch": 25,
+    "predicted": null,
+    "fits": false,
+    "wall_s": 0.254472017288208
+   },
+   {
+    "batch": 13,
+    "predicted": 16370843136,
+    "fits": true,
+    "wall_s": 0.2632770538330078
+   },
+   {
+    "batch": 19,
+    "predicted": 22690478592,
+    "fits": true,
+    "wall_s": 0.26311683654785156
+   },
+   {
+    "batch": 22,
+    "predicted": 25762862592,
+    "fits": true,
+    "wall_s": 0.27614283561706543
+   },
+   {
+    "batch": 23,
+    "predicted": 25668264960,
+    "fits": true,
+    "wall_s": 0.27341556549072266
+   },
+   {
+    "batch": 24,
+    "predicted": null,
+    "fits": false,
+    "wall_s": 0.27363014221191406
+   }
+  ],
+  "predicted_max_trains": true,
+  "predicted_max_plus1_ooms": true,
+  "true_max": 23,
+  "real_search_s": 25.89937686920166,
+  "real_search_runs": 7,
+  "real_search_ooms": 2,
+  "real_runs": [
+   {
+    "batch": 1,
+    "ok": true,
+    "wall_s": 2.319390058517456,
+    "error": null
+   },
+   {
+    "batch": 25,
+    "ok": false,
+    "wall_s": 2.978480815887451,
+    "error": "soliton: out of memory on cuda allocating 4.79 GiB (allocated 20.71 GiB, reserved 20.71 GiB)"
+   },
+   {
+    "batch": 13,
+    "ok": true,
+    "wall_s": 3.473198175430298,
+    "error": null
+   },
+   {
+    "batch": 19,
+    "ok": true,
+    "wall_s": 4.099837303161621,
+    "error": null
+   },
+   {
+    "batch": 22,
+    "ok": true,
+    "wall_s": 5.8046934604644775,
+    "error": null
+   },
+   {
+    "batch": 23,
+    "ok": true,
+    "wall_s": 4.799704313278198,
+    "error": null
+   },
+   {
+    "batch": 24,
+    "ok": false,
+    "wall_s": 2.4223217964172363,
+    "error": "soliton: out of memory on cuda allocating 4.60 GiB (allocated 19.87 GiB, reserved 19.87 GiB)"
+   }
+  ]
+ },
+ {
+  "framework": "pytorch",
+  "budget_gib": 24.0,
+  "predicted_max": 13,
+  "predict_search_s": 51.030622720718384,
+  "predict_calls": [
+   {
+    "batch": 1,
+    "predicted": 3325308928,
+    "fits": true,
+    "wall_s": 8.452094078063965
+   },
+   {
+    "batch": 25,
+    "predicted": 47293837312,
+    "fits": false,
+    "wall_s": 8.45774531364441
+   },
+   {
+    "batch": 13,
+    "predicted": 25309573120,
+    "fits": true,
+    "wall_s": 8.5303475856781
+   },
+   {
+    "batch": 19,
+    "predicted": 36301705216,
+    "fits": false,
+    "wall_s": 8.539269924163818
+   },
+   {
+    "batch": 16,
+    "predicted": 30805639168,
+    "fits": false,
+    "wall_s": 8.51695203781128
+   },
+   {
+    "batch": 14,
+    "predicted": 27141595136,
+    "fits": false,
+    "wall_s": 8.532991170883179
+   }
+  ],
+  "predicted_max_trains": false,
+  "predicted_max_plus1_ooms": true,
+  "true_max": 12,
+  "real_search_s": 39.491456270217896,
+  "real_search_runs": 7,
+  "real_search_ooms": 2,
+  "real_runs": [
+   {
+    "batch": 1,
+    "ok": true,
+    "wall_s": 4.913625001907349,
+    "error": null
+   },
+   {
+    "batch": 25,
+    "ok": false,
+    "wall_s": 4.782166004180908,
+    "error": "CUDA out of memory. Tried to allocate 1.17 GiB. GPU 0 has a total capacity of 47.41 GiB of which 23.78 GiB is free. Including non-PyTorch memory, this process has 23.61 GiB memory in use. 24.00 GiB al"
+   },
+   {
+    "batch": 13,
+    "ok": false,
+    "wall_s": 5.623816967010498,
+    "error": "CUDA out of memory. Tried to allocate 2.49 GiB. GPU 0 has a total capacity of 47.41 GiB of which 24.21 GiB is free. Including non-PyTorch memory, this process has 23.18 GiB memory in use. 24.00 GiB al"
+   },
+   {
+    "batch": 7,
+    "ok": true,
+    "wall_s": 5.6459877490997314,
+    "error": null
+   },
+   {
+    "batch": 10,
+    "ok": true,
+    "wall_s": 6.083455801010132,
+    "error": null
+   },
+   {
+    "batch": 11,
+    "ok": true,
+    "wall_s": 6.192369222640991,
+    "error": null
+   },
+   {
+    "batch": 12,
+    "ok": true,
+    "wall_s": 6.24842643737793,
+    "error": null
+   }
+  ]
+ },
+ {
+  "framework": "jax",
+  "budget_gib": 24.0,
+  "true_max": 16,
+  "real_search_s": 249.53189039230347,
+  "real_search_runs": 6,
+  "real_search_ooms": 3,
+  "real_runs": [
+   {
+    "batch": 1,
+    "ok": true,
+    "wall_s": 28.50210952758789,
+    "error": null
+   },
+   {
+    "batch": 25,
+    "ok": false,
+    "wall_s": 52.11374282836914,
+    "error": "RESOURCE_EXHAUSTED: Out of memory while trying to allocate 35702443120 bytes."
+   },
+   {
+    "batch": 13,
+    "ok": true,
+    "wall_s": 37.76378083229065,
+    "error": null
+   },
+   {
+    "batch": 19,
+    "ok": false,
+    "wall_s": 50.64865684509277,
+    "error": "RESOURCE_EXHAUSTED: Out of memory while trying to allocate 27436183152 bytes."
+   },
+   {
+    "batch": 16,
+    "ok": true,
+    "wall_s": 31.018911361694336,
+    "error": null
+   },
+   {
+    "batch": 17,
+    "ok": false,
+    "wall_s": 49.482996225357056,
+    "error": "RESOURCE_EXHAUSTED: Out of memory while trying to allocate 24012817264 bytes."
+   }
+  ]
+ },
+ {
+  "framework": "tensorflow",
+  "budget_gib": 24.0,
+  "true_max": 8,
+  "real_search_s": 159.70190048217773,
+  "real_search_runs": 7,
+  "real_search_ooms": 4,
+  "real_runs": [
+   {
+    "batch": 1,
+    "ok": true,
+    "wall_s": 17.501859664916992,
+    "error": null
+   },
+   {
+    "batch": 25,
+    "ok": false,
+    "wall_s": 30.992653369903564,
+    "error": "Graph execution error:"
+   },
+   {
+    "batch": 13,
+    "ok": false,
+    "wall_s": 30.26518154144287,
+    "error": "Graph execution error:"
+   },
+   {
+    "batch": 7,
+    "ok": true,
+    "wall_s": 15.76539921760559,
+    "error": null
+   },
+   {
+    "batch": 10,
+    "ok": false,
+    "wall_s": 26.12160038948059,
+    "error": "Graph execution error:"
+   },
+   {
+    "batch": 8,
+    "ok": true,
+    "wall_s": 14.677785158157349,
+    "error": null
+   },
+   {
+    "batch": 9,
+    "ok": false,
+    "wall_s": 24.37587547302246,
+    "error": "Graph execution error:"
+   }
+  ]
+ }
+]
